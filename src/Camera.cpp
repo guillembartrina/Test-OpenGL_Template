@@ -1,7 +1,6 @@
 
 #include "Camera.hpp"
 
-#include <iostream>
 #include <math.h>
 
 Camera::Camera()
@@ -16,7 +15,6 @@ Camera::~Camera() {}
 
 void Camera::setFocus(glm::vec3 OBS, glm::vec3 VRP, glm::vec3 up)
 {
-	
 	this->OBS = OBS;
 	this->VRP = VRP;
 	this->up = up;
@@ -136,6 +134,22 @@ void Camera::setOptic_Orthogonal(float l, float r, float b, float t, float zN, f
 	PM = glm::ortho(l, r, b, t, zN, zF);
 }
 
+void Camera::moveOBS(glm::vec3 offset, bool vrptoo)
+{
+	OBS += offset;
+	if(vrptoo) VRP += offset;
+	
+	VM = glm::lookAt(OBS, VRP, up);
+}
+
+void Camera::moveVRP(glm::vec3 offset, bool relative)
+{
+	if(relative) VRP += offset;
+	else VRP = offset;
+	
+	VM = glm::lookAt(OBS, VRP, up);
+}
+
 void Camera::rotateX(float offset, bool relative)
 {
 	glm::mat4 tmp(1.f);
@@ -202,7 +216,7 @@ void Camera::rotateZ(float offset, bool relative)
 	VM = glm::lookAt(OBS, VRP, up);
 }
 
-void Camera::resize(unsigned int w, unsigned int h)
+void Camera::applyResize(unsigned int w, unsigned int h)
 {
 	float tmp = float(w)/float(h);
 	

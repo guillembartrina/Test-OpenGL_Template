@@ -2,24 +2,26 @@
 #include "Program.hpp"
 
 #include <fstream>
+#include <iostream>
+#include <vector>
 
 Program::Program()
 {
 	ID = glCreateProgram();
 	
-	vsID = 0;
-	fsID = 0;
+	vs = false;
+	fs = false;
 }
 
 Program::~Program()
 {
-	if(vsID != 0)
+	if(vsID)
 	{
 		glDetachShader(ID, vsID);
 		glDeleteShader(vsID);
 	}
 	
-	if(fsID != 0)
+	if(fsID)
 	{
 		glDetachShader(ID, fsID);
 		glDeleteShader(fsID);
@@ -30,7 +32,7 @@ Program::~Program()
 
 void Program::setVS(const std::string& path, const std::vector<const char*>& names)
 {
-	if(vsID != 0)
+	if(vs)
 	{
 		glDetachShader(ID, vsID);
 		glDeleteShader(vsID);
@@ -42,6 +44,8 @@ void Program::setVS(const std::string& path, const std::vector<const char*>& nam
 	vsID = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vsID, 1, &str, &len);
 	glCompileShader(vsID);
+	
+	vs = !checkError(vsID);
 	
 	glAttachShader(ID, vsID);
 	
@@ -58,7 +62,7 @@ void Program::setVS(const std::string& path, const std::vector<const char*>& nam
 
 void Program::setFS(const std::string& path)
 {
-	if(fsID != 0)
+	if(fs)
 	{
 		glDetachShader(ID, fsID);
 		glDeleteShader(fsID);
@@ -70,6 +74,8 @@ void Program::setFS(const std::string& path)
 	fsID = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fsID, 1, &str, &len);
 	glCompileShader(fsID);
+	
+	fs = !checkError(fsID);
 	
 	glAttachShader(ID, fsID);
 	
@@ -90,6 +96,28 @@ void Program::addUniforms(const std::vector<const char*>& names, std::vector<GLu
 void Program::useProgram() const
 {
 	glUseProgram(ID);
+}
+
+bool Program::checkError(GLuint id) const
+{
+	GLint compiled = GL_FALSE;;
+	glGetShaderiv(id, GL_COMPILE_STATUS, &compiled);
+	if(compiled == GL_FALSE)
+	{
+		GLint maxLength = 0;
+		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &maxLength);
+
+		std::vector<GLchar> errorLog(maxLength);
+		glGetShaderInfoLog(id, maxLength, &maxLength, &errorLog[0]);
+		
+		for(int i = 0; i < maxLength; i++) std::cerr << errorLog[i];
+
+		glDeleteShader(id);
+		
+		return true;
+	}
+	
+	return false;
 }
 
 char* Program::readFile(const std::string& path, GLint& size)

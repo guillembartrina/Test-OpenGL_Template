@@ -10,8 +10,11 @@
 
 #include "Camera.hpp"
 #include "Program.hpp"
+#include "model.hpp"
 
 Camera c;
+
+Model m;
 
 double posX, posY;
 
@@ -30,6 +33,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	
 	if (key == GLFW_KEY_W && (action != GLFW_RELEASE)) c.rotateY(5 * (3.14159265 / 180.0), true);
 	if (key == GLFW_KEY_S && (action != GLFW_RELEASE)) c.rotateY(-5 * (3.14159265 / 180.0), true);
+	
+	if (key == GLFW_KEY_Z && (action != GLFW_RELEASE)) c.rotateZ(5 * (3.14159265 / 180.0), true);
+	if (key == GLFW_KEY_X && (action != GLFW_RELEASE)) c.rotateZ(-5 * (3.14159265 / 180.0), true);
 }
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
@@ -47,8 +53,13 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
 
 void window_size_callback(GLFWwindow* window, int width, int height)
 {
-	c.resize(width, height);
+	c.applyResize(width, height);
 	glViewport(0, 0, width, height);
+}
+
+void error_callback(int error, const char* description)
+{
+    std::cerr << "Error: " << description << std::endl;
 }
 
 int main()
@@ -67,6 +78,7 @@ int main()
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetCursorPosCallback(window, cursor_position_callback);
 	glfwSetWindowSizeCallback(window, window_size_callback);
+	glfwSetErrorCallback(error_callback);
 
     glfwMakeContextCurrent(window);
 	glewInit();
@@ -78,18 +90,62 @@ int main()
 	
 	glfwGetCursorPos(window, &posX, &posY);
 	
-	p.setVS("shaders/vs.vert", { "position" });
+	p.setVS("shaders/vs.vert", { "position", "normal", "ka", "kd", "ks", "n" });
 	p.setFS("shaders/fs.frag");
 	
 	std::vector<GLuint> locs(3);
 	p.addUniforms({ "GT", "VT", "PT" }, locs);
 	
+	m.load("objs/box.obj");
+	
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 	
-	GLuint vbo;
-	glGenBuffers(1, &vbo);
+	GLuint vbo[6];
+	
+	glGenBuffers(6, vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*m.faces().size()*3*3, m.VBO_vertices(), GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*m.faces().size()*3*3, m.VBO_normals(), GL_STATIC_DRAW);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*m.faces().size()*3*3, m.VBO_matamb(), GL_STATIC_DRAW);
+
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*m.faces().size()*3*3, m.VBO_matdiff(), GL_STATIC_DRAW);
+
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(3);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[4]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*m.faces().size()*3*3, m.VBO_matspec(), GL_STATIC_DRAW);
+
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(4);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[5]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*m.faces().size()*3, m.VBO_matshin(), GL_STATIC_DRAW);
+
+	glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(5);
+
+	glBindVertexArray(0);
+	
+	/*
+	
+	glGenBuffers(6, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	
 	glm::vec3 triangle[12*3] = 
@@ -138,15 +194,25 @@ int main()
 	
 	glBindVertexArray(0);
 	
+	*/
+	
 	glm::mat4 gt(1.0);
 	//gt = glm::rotate(gt, 0.5f, glm::vec3(0, 1, 0));
 	//gt = glm::scale(gt, glm::vec3(0.5, 2, 2));
+	gt = glm::scale(gt, glm::vec3(0.1, 0.1, 0.1));
 	
-	c.setAs3PCOf(glm::vec3(-2, -2, -2), glm::vec3(2, 2, 2), OpticType::PERSPECTIVE, glm::vec3(1, 0, 0), 4.f, glm::vec3(0, 1, 0));
+	c.setAs3PCOf(glm::vec3(-3, -3, -3), glm::vec3(3, 3, 3), OpticType::PERSPECTIVE, glm::vec3(1, 0, 0), 8.f, glm::vec3(0, 1, 0));
 	
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+		/*
+		GLenum err;
+		while ((err = glGetError()) != GL_NO_ERROR) {
+			std::cerr << "OpenGL error: " << err << std::endl;
+		}
+		*/
 		
 		glBindVertexArray(vao);
 		p.useProgram();
@@ -155,7 +221,7 @@ int main()
 		glUniformMatrix4fv(locs[1], 1, GL_FALSE, c.getVM());
 		glUniformMatrix4fv(locs[2], 1, GL_FALSE, c.getPM());
 		
-		glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
+		glDrawArrays(GL_TRIANGLES, 0, m.faces().size()*3);
 		
 		glUseProgram(0);
 		glBindVertexArray(0);
@@ -165,7 +231,7 @@ int main()
         glfwPollEvents();
     }
 	
-	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(6, vbo);
 	glDeleteVertexArrays(1, &vao);
 	
     glfwTerminate();

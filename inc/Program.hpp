@@ -25,10 +25,14 @@ class Program
 	private:
 	
 	GLuint ID;
+	bool vs;
 	GLuint vsID;
+	bool fs;
 	GLuint fsID;
 	
 	//save uniforms?
+	
+	bool checkError(GLuint id) const;
 	
 	static char* readFile(const std::string& path, GLint& size); //reimplement??
 };
