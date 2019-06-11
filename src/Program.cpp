@@ -53,7 +53,7 @@ void Program::setVS(const std::string& path, const std::vector<const char*>& nam
 	glLinkProgram(ID);
 	glValidateProgram(ID);
 	
-	//free(str);
+	free((void*)str);
 }
 
 void Program::setFS(const std::string& path)
@@ -76,7 +76,7 @@ void Program::setFS(const std::string& path)
 	glLinkProgram(ID);
 	glValidateProgram(ID);
 	
-	//free(str);
+	free((void*)str);
 }
 
 void Program::addUniforms(const std::vector<const char*>& names, std::vector<GLuint>& locations)
@@ -87,9 +87,9 @@ void Program::addUniforms(const std::vector<const char*>& names, std::vector<GLu
 	}
 }
 
-GLuint Program::getID() const
+void Program::useProgram() const
 {
-	return ID;
+	glUseProgram(ID);
 }
 
 char* Program::readFile(const std::string& path, GLint& size)

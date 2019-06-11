@@ -19,7 +19,8 @@ class Program
 	
 	void addUniforms(const std::vector<const char*>& names, std::vector<GLuint>& locations);
 	
-	GLuint getID() const;
+	void useProgram() const;
+	
 	
 	private:
 	
@@ -30,7 +31,6 @@ class Program
 	//save uniforms?
 	
 	static char* readFile(const std::string& path, GLint& size); //reimplement??
-	
 };
 
 #endif

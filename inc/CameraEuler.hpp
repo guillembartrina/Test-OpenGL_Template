@@ -24,9 +24,9 @@ class Camera
 	void setAsDefault3PCOf(glm::vec3 min, glm::vec3 max, OpticType type);
 	void setAs3PCOf(glm::vec3 min, glm::vec3 max, OpticType type, glm::vec3 OBSdir, float dist, glm::vec3 up);
 	
-	void rotateX(float offset, bool relative = false);
-	void rotateY(float offset, bool relative = false);
-	void rotateZ(float offset, bool relative = false);
+	void rotateX(float offset);
+	void rotateY(float offset);
+	void rotateZ(float offset);
 	
 	void resize(unsigned int w, unsigned int h);
 	
@@ -43,6 +43,8 @@ class Camera
 	glm::vec3 OBS;
 	glm::vec3 VRP;
 	glm::vec3 up;
+	
+	glm::mat4 ir;
 	
 	glm::mat4 VM;
 	

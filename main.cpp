@@ -21,13 +21,20 @@ bool moving = false;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	if (key == GLFW_KEY_A && action == GLFW_PRESS) moving = true;
-	if (key == GLFW_KEY_A && action == GLFW_RELEASE) moving = false;
-	if (key == GLFW_KEY_S && action == GLFW_PRESS) c.rotateZ(30 * (3.14159265 / 180.0));
+	//if (key == GLFW_KEY_A && action == GLFW_PRESS) moving = true;
+	//if (key == GLFW_KEY_A && action == GLFW_RELEASE) moving = false;
+	//if (key == GLFW_KEY_S && action == GLFW_PRESS) c.rotateX(30 * (3.14159265 / 180.0), false);
+	
+	if (key == GLFW_KEY_A && (action != GLFW_RELEASE)) c.rotateX(5 * (3.14159265 / 180.0), true);
+	if (key == GLFW_KEY_D && (action != GLFW_RELEASE)) c.rotateX(-5 * (3.14159265 / 180.0), true);
+	
+	if (key == GLFW_KEY_W && (action != GLFW_RELEASE)) c.rotateY(5 * (3.14159265 / 180.0), true);
+	if (key == GLFW_KEY_S && (action != GLFW_RELEASE)) c.rotateY(-5 * (3.14159265 / 180.0), true);
 }
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
+	/*
 		double diffX = xpos - posX;
 		if(moving) c.rotateX(diffX / 180.f);
 		posX = xpos;
@@ -35,6 +42,7 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
 		double diffY = ypos - posY;
 		if(moving) c.rotateY(diffY / 180.f );
 		posY = ypos;
+		*/
 }
 
 void window_size_callback(GLFWwindow* window, int width, int height)
@@ -134,14 +142,14 @@ int main()
 	//gt = glm::rotate(gt, 0.5f, glm::vec3(0, 1, 0));
 	//gt = glm::scale(gt, glm::vec3(0.5, 2, 2));
 	
-	c.setAs3PCOf(glm::vec3(-2, -2, -2), glm::vec3(2, 2, 2), OpticType::PERSPECTIVE, glm::vec3(0, 1, 0), 4.f, glm::vec3(0, 0, -1));
+	c.setAs3PCOf(glm::vec3(-2, -2, -2), glm::vec3(2, 2, 2), OpticType::PERSPECTIVE, glm::vec3(1, 0, 0), 4.f, glm::vec3(0, 1, 0));
 	
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		glBindVertexArray(vao);
-		glUseProgram(p.getID());
+		p.useProgram();
 		
 		glUniformMatrix4fv(locs[0], 1, GL_FALSE, &gt[0][0]);
 		glUniformMatrix4fv(locs[1], 1, GL_FALSE, c.getVM());
