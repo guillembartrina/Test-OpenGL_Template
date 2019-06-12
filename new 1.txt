@@ -1,0 +1,13 @@
+	
+	mat3 NM = inverse(transpose(mat3(VT * GT)));
+	vec3 tmpNormal = normalize(NM * normal);
+	
+	vec3 tmpPosition = vec3(VT * GT * vec4(position, 1.0));
+	vec3 tmpL = normalize(posFocus - position);
+	
+	float tmpPhi = dot(vec3(0.0, 1.0, 0.0), tmpL);
+	
+	if(tmpPhi > 0.0)
+	{
+		tmpColor = tmpColor + colFocus * kd * tmpPhi;
+	}

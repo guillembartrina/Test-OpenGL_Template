@@ -24,12 +24,17 @@ class Camera
 	void setAsDefault3PCOf(glm::vec3 min, glm::vec3 max, OpticType type);
 	void setAs3PCOf(glm::vec3 min, glm::vec3 max, OpticType type, glm::vec3 OBSdir, float dist, glm::vec3 up);
 	
-	void moveOBS(glm::vec3 offset, bool vrptoo = false);
-	void moveVRP(glm::vec3 offset, bool relative = false);
+	void move(glm::vec3 offset, bool relative = false);
+	void move_OBS(glm::vec3 offset, bool relative = false);
+	void move_VRP(glm::vec3 offset, bool relative = false);
 	
-	void rotateX(float offset, bool relative = false);
-	void rotateY(float offset, bool relative = false);
-	void rotateZ(float offset, bool relative = false);
+	void rotateX_OBS(float offset, bool relative = true);
+	void rotateY_OBS(float offset, bool relative = true);
+	void rotateZ_OBS(float offset, bool relative = true);
+
+	void rotateX_VRP(float offset, bool relative = true);
+	void rotateY_VRP(float offset, bool relative = true);
+	//void rotateZ_VRP(float offset, bool relative = true);
 	
 	void applyResize(unsigned int w, unsigned int h);
 	

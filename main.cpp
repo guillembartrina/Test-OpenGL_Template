@@ -12,7 +12,8 @@
 #include "Program.hpp"
 #include "model.hpp"
 
-Camera c;
+Camera c1;
+Camera c2;
 
 Model m;
 
@@ -24,37 +25,37 @@ bool moving = false;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	//if (key == GLFW_KEY_A && action == GLFW_PRESS) moving = true;
-	//if (key == GLFW_KEY_A && action == GLFW_RELEASE) moving = false;
+	if (key == GLFW_KEY_A && action == GLFW_PRESS) moving = true;
+	if (key == GLFW_KEY_A && action == GLFW_RELEASE) moving = false;
 	//if (key == GLFW_KEY_S && action == GLFW_PRESS) c.rotateX(30 * (3.14159265 / 180.0), false);
 	
-	if (key == GLFW_KEY_A && (action != GLFW_RELEASE)) c.rotateX(5 * (3.14159265 / 180.0), true);
-	if (key == GLFW_KEY_D && (action != GLFW_RELEASE)) c.rotateX(-5 * (3.14159265 / 180.0), true);
+	//if (key == GLFW_KEY_A && (action != GLFW_RELEASE)) c.rotateX(5 * (3.14159265 / 180.0), true);
+	//if (key == GLFW_KEY_D && (action != GLFW_RELEASE)) c.rotateX(-5 * (3.14159265 / 180.0), true);
 	
-	if (key == GLFW_KEY_W && (action != GLFW_RELEASE)) c.rotateY(5 * (3.14159265 / 180.0), true);
-	if (key == GLFW_KEY_S && (action != GLFW_RELEASE)) c.rotateY(-5 * (3.14159265 / 180.0), true);
+	//if (key == GLFW_KEY_W && (action != GLFW_RELEASE)) c.rotateY(5 * (3.14159265 / 180.0), true);
+	//if (key == GLFW_KEY_S && (action != GLFW_RELEASE)) c.rotateY(-5 * (3.14159265 / 180.0), true);
 	
-	if (key == GLFW_KEY_Z && (action != GLFW_RELEASE)) c.rotateZ(5 * (3.14159265 / 180.0), true);
-	if (key == GLFW_KEY_X && (action != GLFW_RELEASE)) c.rotateZ(-5 * (3.14159265 / 180.0), true);
+	//if (key == GLFW_KEY_Z && (action != GLFW_RELEASE)) c.rotateZ(5 * (3.14159265 / 180.0), true);
+	//if (key == GLFW_KEY_X && (action != GLFW_RELEASE)) c.rotateZ(-5 * (3.14159265 / 180.0), true);
 }
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
-	/*
 		double diffX = xpos - posX;
-		if(moving) c.rotateX(diffX / 180.f);
+		if(moving) c1.rotateX_VRP(diffX / 360.f);
+		if(moving) c2.rotateX_VRP(diffX / 360.f);
 		posX = xpos;
 		
 		double diffY = ypos - posY;
-		if(moving) c.rotateY(diffY / 180.f );
+		if(moving) c1.rotateY_VRP(diffY / 360.f);
+		if(moving) c2.rotateY_VRP(diffY / 360.f);
 		posY = ypos;
-		*/
 }
 
 void window_size_callback(GLFWwindow* window, int width, int height)
 {
-	c.applyResize(width, height);
-	glViewport(0, 0, width, height);
+	c1.applyResize(width/2.f, height);
+	c2.applyResize(width/2.f, height);
 }
 
 void error_callback(int error, const char* description)
@@ -68,7 +69,7 @@ int main()
 
     if (!glfwInit()) exit(EXIT_FAILURE);
 
-    window = glfwCreateWindow(800, 800, "OpenGL", NULL, NULL);
+    window = glfwCreateWindow(800, 400, "OpenGL", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -201,7 +202,12 @@ int main()
 	//gt = glm::scale(gt, glm::vec3(0.5, 2, 2));
 	gt = glm::scale(gt, glm::vec3(0.1, 0.1, 0.1));
 	
-	c.setAs3PCOf(glm::vec3(-3, -3, -3), glm::vec3(3, 3, 3), OpticType::PERSPECTIVE, glm::vec3(1, 0, 0), 8.f, glm::vec3(0, 1, 0));
+	c1.setAs3PCOf(glm::vec3(-3, -3, -3), glm::vec3(3, 3, 3), OpticType::PERSPECTIVE, glm::vec3(1, 0, 0), 8.f, glm::vec3(0, 1, 0));
+	c2.setAs3PCOf(glm::vec3(-3, -3, -3), glm::vec3(3, 3, 3), OpticType::PERSPECTIVE, glm::vec3(1, 0, 0), 8.f, glm::vec3(0, 1, 0));
+
+	c1.move_OBS(glm::vec3(0, 0, 0.2), true);
+	c2.move_OBS(glm::vec3(0, 0, -0.2), true);
+
 	
     while (!glfwWindowShouldClose(window))
     {
@@ -216,10 +222,20 @@ int main()
 		
 		glBindVertexArray(vao);
 		p.useProgram();
+
+		glViewport(0, 0, 400, 400);
 		
 		glUniformMatrix4fv(locs[0], 1, GL_FALSE, &gt[0][0]);
-		glUniformMatrix4fv(locs[1], 1, GL_FALSE, c.getVM());
-		glUniformMatrix4fv(locs[2], 1, GL_FALSE, c.getPM());
+		glUniformMatrix4fv(locs[1], 1, GL_FALSE, c1.getVM());
+		glUniformMatrix4fv(locs[2], 1, GL_FALSE, c1.getPM());
+		
+		glDrawArrays(GL_TRIANGLES, 0, m.faces().size()*3);
+
+		glViewport(400, 0, 400, 400);
+		
+		glUniformMatrix4fv(locs[0], 1, GL_FALSE, &gt[0][0]);
+		glUniformMatrix4fv(locs[1], 1, GL_FALSE, c2.getVM());
+		glUniformMatrix4fv(locs[2], 1, GL_FALSE, c2.getPM());
 		
 		glDrawArrays(GL_TRIANGLES, 0, m.faces().size()*3);
 		
