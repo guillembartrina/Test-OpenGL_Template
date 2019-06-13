@@ -42,12 +42,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
 		double diffX = xpos - posX;
-		if(moving) c1.rotateX_VRP(diffX / 360.f);
+		if(moving) c1.rotateX_OBS(diffX / 360.f);
 		if(moving) c2.rotateX_VRP(diffX / 360.f);
 		posX = xpos;
 		
 		double diffY = ypos - posY;
-		if(moving) c1.rotateY_VRP(diffY / 360.f);
+		if(moving) c1.rotateY_OBS(diffY / 360.f);
 		if(moving) c2.rotateY_VRP(diffY / 360.f);
 		posY = ypos;
 }
@@ -91,8 +91,7 @@ int main()
 	
 	glfwGetCursorPos(window, &posX, &posY);
 	
-	p.setVS("shaders/vs.vert", { "position", "normal", "ka", "kd", "ks", "n" });
-	p.setFS("shaders/fs.frag");
+	p.loadShaders_FromFile("shaders/vs.vert", { "position", "normal", "ka", "kd", "ks", "n" }, "shaders/fs.frag");
 	
 	std::vector<GLuint> locs(3);
 	p.addUniforms({ "GT", "VT", "PT" }, locs);

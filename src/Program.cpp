@@ -1,28 +1,23 @@
 
 #include "Program.hpp"
 
-#include <fstream>
 #include <iostream>
-#include <vector>
+#include <fstream>
+#include <sstream>
 
 Program::Program()
 {
 	ID = glCreateProgram();
-	
-	vs = false;
-	fs = false;
+
+	loaded = false;
 }
 
 Program::~Program()
 {
-	if(vsID)
+	if(loaded)
 	{
 		glDetachShader(ID, vsID);
 		glDeleteShader(vsID);
-	}
-	
-	if(fsID)
-	{
 		glDetachShader(ID, fsID);
 		glDeleteShader(fsID);
 	}
@@ -30,113 +25,160 @@ Program::~Program()
 	glDeleteProgram(ID);
 }
 
-void Program::setVS(const std::string& path, const std::vector<const char*>& names)
+void Program::loadShaders_FromFile(const std::string& vspath, const std::vector<const char*>& vsinnames, const std::string& fspath)
 {
-	if(vs)
+	if(loaded)
 	{
 		glDetachShader(ID, vsID);
 		glDeleteShader(vsID);
-	}
-	
-	GLint len;
-	const GLchar* str = readFile(path, len);
-	
-	vsID = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vsID, 1, &str, &len);
-	glCompileShader(vsID);
-	
-	vs = !checkError(vsID);
-	
-	glAttachShader(ID, vsID);
-	
-	for(unsigned int i = 0; i < names.size(); i++)
-	{
-		glBindAttribLocation(ID, i, names[i]);
-	}
-	
-	glLinkProgram(ID);
-	glValidateProgram(ID);
-	
-	free((void*)str);
-}
-
-void Program::setFS(const std::string& path)
-{
-	if(fs)
-	{
 		glDetachShader(ID, fsID);
 		glDeleteShader(fsID);
 	}
-	
-	GLint len;
-	const GLchar* str = readFile(path, len);
-	
-	fsID = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fsID, 1, &str, &len);
-	glCompileShader(fsID);
-	
-	fs = !checkError(fsID);
-	
-	glAttachShader(ID, fsID);
-	
-	glLinkProgram(ID);
-	glValidateProgram(ID);
-	
-	free((void*)str);
+
+	if(not load_FromFile(vspath, fspath)) std::cerr << "Error loading shaders" << std::endl;
+	if(not compile()) std::cerr << "Error compiling shaders" << std::endl;
+
+	for(unsigned int i = 0; i < vsinnames.size(); i++)
+	{
+		glBindAttribLocation(ID, i, vsinnames[i]);
+	}
+
+	if(not linkAndValidate()) std::cerr << "Error compiling shaders" << std::endl;
+
+	loaded = true;
 }
 
 void Program::addUniforms(const std::vector<const char*>& names, std::vector<GLuint>& locations)
 {
-	for(unsigned int i = 0; i < names.size(); i++)
+	if(loaded)
 	{
-		locations[i] = glGetUniformLocation(ID, names[i]);
+		for(unsigned int i = 0; i < names.size(); i++)
+		{
+			locations[i] = glGetUniformLocation(ID, names[i]);
+		}
 	}
+	else std::cerr << "Adding uniforms while not loaded program" << std::endl;
 }
 
 void Program::useProgram() const
 {
-	glUseProgram(ID);
+	if(loaded)
+	{
+		glUseProgram(ID);
+	}
+	else std::cerr << "Using program while not loaded program" << std::endl;
 }
 
-bool Program::checkError(GLuint id) const
+bool Program::load_FromFile(const std::string& vspath, const std::string& fspath)
 {
-	GLint compiled = GL_FALSE;;
-	glGetShaderiv(id, GL_COMPILE_STATUS, &compiled);
+	return (readFile(vspath, vsSrc) and readFile(fspath, fsSrc));
+}
+
+bool Program::compile()
+{
+	vsID = glCreateShader(GL_VERTEX_SHADER);
+	
+	const GLchar* srcVS = vsSrc.c_str();
+	glShaderSource(vsID, 1, &srcVS, 0);
+	glCompileShader(vsID);
+
+	GLint compiled;
+	glGetShaderiv(vsID, GL_COMPILE_STATUS, &compiled);
 	if(compiled == GL_FALSE)
 	{
-		GLint maxLength = 0;
-		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &maxLength);
+		GLint maxLen;
+		glGetShaderiv(vsID, GL_INFO_LOG_LENGTH, &maxLen);
 
-		std::vector<GLchar> errorLog(maxLength);
-		glGetShaderInfoLog(id, maxLength, &maxLength, &errorLog[0]);
-		
-		for(int i = 0; i < maxLength; i++) std::cerr << errorLog[i];
+		char* log = (char*)malloc(maxLen);
+		glGetShaderInfoLog(vsID, maxLen, &maxLen, log);
+		std::cerr << "VS compile error:\n" << log << std::endl;
+		free((void*)log);
 
-		glDeleteShader(id);
-		
-		return true;
+		return false;
 	}
+
+	glAttachShader(ID, vsID);
+
+
+	fsID = glCreateShader(GL_FRAGMENT_SHADER);
 	
-	return false;
+	const GLchar* srcFS = fsSrc.c_str();
+	glShaderSource(fsID, 1, &srcFS, 0);
+	glCompileShader(fsID);
+
+	glGetShaderiv(fsID, GL_COMPILE_STATUS, &compiled);
+	if(compiled == GL_FALSE)
+	{
+		GLint maxLen;
+		glGetShaderiv(fsID, GL_INFO_LOG_LENGTH, &maxLen);
+
+		char* log = (char*)malloc(maxLen);
+		glGetShaderInfoLog(fsID, maxLen, &maxLen, log);
+		std::cerr << "FS compile error:\n" << log << std::endl;
+		free((void*)log);
+
+		return false;
+	}
+
+	glAttachShader(ID, fsID);
+
+	return true;
 }
 
-char* Program::readFile(const std::string& path, GLint& size)
+bool Program::linkAndValidate()
 {
-	char* string = nullptr;
+	glLinkProgram(ID);
+
+	GLint linked;
+	glGetProgramiv(ID, GL_LINK_STATUS, &linked);
+	if(linked == GL_FALSE)
+	{
+		GLint maxLen;
+		glGetProgramiv(ID, GL_INFO_LOG_LENGTH, &maxLen);
+
+		char* log = (char*)malloc(maxLen);
+		glGetProgramInfoLog(ID, maxLen, &maxLen, log);
+		std::cerr << "link error:\n" << log << std::endl;
+		free((void*)log);
+
+		return false;
+	}
+
+	glValidateProgram(ID);
+
+	GLint validated;
+	glGetProgramiv(ID, GL_VALIDATE_STATUS, &validated);
+	if(validated == GL_FALSE)
+	{
+		GLint maxLen;
+		glGetProgramiv(ID, GL_INFO_LOG_LENGTH, &maxLen);
+
+		char* log = (char*)malloc(maxLen);
+		glGetProgramInfoLog(ID, maxLen, &maxLen, log);
+		std::cerr << "validate error:\n" << log << std::endl;
+		free((void*)log);
+
+		return false;
+	}
+
+	return true;
+}
+
+bool Program::readFile(const std::string& path,  std::string& src)
+{
+	src.clear();
 	
 	std::ifstream file(path);
 	
 	if(file.is_open())
 	{
-		file.seekg(0, std::ios::end);
-		size = file.tellg();
-		file.seekg(0);
-		
-		string = (char*)malloc(size + 1);
-		file.read(string, size);
+		std::stringstream ss;
+		ss << file.rdbuf();
+		src = ss.str();
 		
 		file.close();
 	}
+	else return false;
 	
-	return string;
+	return true;
 }

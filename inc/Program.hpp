@@ -13,28 +13,29 @@ class Program
 	
 	Program();
 	~Program();
-	
-	void setVS(const std::string& path, const std::vector<const char*>& names);
-	void setFS(const std::string& path);
-	
+
+	void loadShaders_FromFile(const std::string& vspath, const std::vector<const char*>& vsinnames, const std::string& fspath);
 	void addUniforms(const std::vector<const char*>& names, std::vector<GLuint>& locations);
-	
+
 	void useProgram() const;
 	
 	
 	private:
 	
 	GLuint ID;
-	bool vs;
 	GLuint vsID;
-	bool fs;
+	std::string vsSrc;
 	GLuint fsID;
-	
+	std::string fsSrc;
+
+	bool loaded;	
 	//save uniforms?
+
+	bool load_FromFile(const std::string& vspath, const std::string& fspath);
+	bool compile();
+	bool linkAndValidate();
 	
-	bool checkError(GLuint id) const;
-	
-	static char* readFile(const std::string& path, GLint& size); //reimplement??
+	static bool readFile(const std::string& path, std::string& src);
 };
 
 #endif
