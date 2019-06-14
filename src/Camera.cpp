@@ -50,7 +50,7 @@ void Camera::setOptic_Orthogonal(float l, float r, float b, float t, float zN, f
 	PM = glm::ortho(l, r, b, t, zN, zF);
 }
 
-void Camera::setAsDefault3PCOf(glm::vec3 min, glm::vec3 max, OpticType type)
+void Camera::setAs3PC_Default(glm::vec3 min, glm::vec3 max, OpticType type)
 {
 	VRP = (min+max)/2.f;
 	radius = glm::distance(min, VRP);
@@ -92,7 +92,7 @@ void Camera::setAsDefault3PCOf(glm::vec3 min, glm::vec3 max, OpticType type)
 	}
 }
 
-void Camera::setAs3PCOf(glm::vec3 min, glm::vec3 max, OpticType type, glm::vec3 OBSdir, float dist, glm::vec3 up)
+void Camera::setAs3PC_Custom(glm::vec3 min, glm::vec3 max, OpticType type, glm::vec3 OBSdir, float dist, glm::vec3 up)
 {
 	VRP = (min+max)/2.f;
 	radius = glm::distance(min, VRP);
@@ -134,7 +134,7 @@ void Camera::setAs3PCOf(glm::vec3 min, glm::vec3 max, OpticType type, glm::vec3 
 	}
 }
 
-void Camera::move(glm::vec3 offset, bool relative)
+void Camera::setPosition(glm::vec3 offset, bool relative)
 {
 	if(relative)
 	{
@@ -150,6 +150,20 @@ void Camera::move(glm::vec3 offset, bool relative)
 	VM = glm::lookAt(OBS, VRP, up);
 }
 
+void Camera::move(glm::vec3 offset)
+{
+	glm::vec3 finalOffset(0.0);
+
+	finalOffset += glm::normalize(glm::cross(VRP-OBS, up)) * offset.x;
+	finalOffset += glm::normalize(up) * offset.y;
+	finalOffset += glm::normalize(VRP-OBS) * -offset.z;
+
+	OBS += finalOffset;
+	VRP += finalOffset;
+
+	VM = glm::lookAt(OBS, VRP, up);
+}
+
 void Camera::move_OBS(glm::vec3 offset, bool relative)
 {
 	if(relative) OBS += offset;
@@ -158,6 +172,7 @@ void Camera::move_OBS(glm::vec3 offset, bool relative)
 	VM = glm::lookAt(OBS, VRP, up);
 }
 
+/*
 void Camera::move_VRP(glm::vec3 offset, bool relative)
 {
 	if(relative) VRP += offset;
@@ -165,6 +180,7 @@ void Camera::move_VRP(glm::vec3 offset, bool relative)
 	
 	VM = glm::lookAt(OBS, VRP, up);
 }
+*/
 
 void Camera::rotateX_OBS(float offset, bool relative)
 {
@@ -266,6 +282,28 @@ void Camera::rotateY_VRP(float offset, bool relative)
 	else
 	{	
 		tmp = glm::rotate(tmp, -offset, glm::vec3(1, 0, 0));	
+	}
+	
+	tmp = glm::translate(tmp, -1.f * OBS);
+	
+	VRP = glm::vec3(tmp * glm::vec4(VRP, 1.0));
+	up = glm::inverse(glm::transpose(glm::mat3(tmp))) * up;
+		
+	VM = glm::lookAt(OBS, VRP, up);
+}
+
+void Camera::rotateZ_VRP(float offset, bool relative)
+{
+	glm::mat4 tmp(1.f);
+	tmp = glm::translate(tmp, OBS);
+	
+	if(relative)
+	{
+		tmp = glm::rotate(tmp, -offset, glm::normalize(VRP - OBS));
+	}
+	else
+	{
+		tmp = glm::rotate(tmp, -offset, glm::vec3(0, 0, 1));
 	}
 	
 	tmp = glm::translate(tmp, -1.f * OBS);

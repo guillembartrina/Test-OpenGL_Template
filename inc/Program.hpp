@@ -7,7 +7,7 @@
 
 #include "GL/glew.h"
 
-class Program
+class Program //NEEDS OPENGL CONTEXT!!!
 {
 	public:
 	
@@ -33,7 +33,7 @@ class Program
 
 	bool load_FromFile(const std::string& vspath, const std::string& fspath);
 	bool compile();
-	bool linkAndValidate();
+	bool link();
 	
 	static bool readFile(const std::string& path, std::string& src);
 };

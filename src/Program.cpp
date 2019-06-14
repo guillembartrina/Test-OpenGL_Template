@@ -43,7 +43,7 @@ void Program::loadShaders_FromFile(const std::string& vspath, const std::vector<
 		glBindAttribLocation(ID, i, vsinnames[i]);
 	}
 
-	if(not linkAndValidate()) std::cerr << "Error compiling shaders" << std::endl;
+	if(not link()) std::cerr << "Error compiling shaders" << std::endl;
 
 	loaded = true;
 }
@@ -125,7 +125,7 @@ bool Program::compile()
 	return true;
 }
 
-bool Program::linkAndValidate()
+bool Program::link()
 {
 	glLinkProgram(ID);
 

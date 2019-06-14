@@ -21,12 +21,13 @@ class Camera
 	void setOptic_Orthogonal(float l, float r, float b, float t, float zN, float zF);
 	//void setOptics_Fustrum();
 	
-	void setAsDefault3PCOf(glm::vec3 min, glm::vec3 max, OpticType type);
-	void setAs3PCOf(glm::vec3 min, glm::vec3 max, OpticType type, glm::vec3 OBSdir, float dist, glm::vec3 up);
+	void setAs3PC_Default(glm::vec3 min, glm::vec3 max, OpticType type);
+	void setAs3PC_Custom(glm::vec3 min, glm::vec3 max, OpticType type, glm::vec3 OBSdir, float dist, glm::vec3 up);
 	
-	void move(glm::vec3 offset, bool relative = false);
+	void setPosition(glm::vec3 offset, bool relative = false);
+	void move(glm::vec3 offset);
 	void move_OBS(glm::vec3 offset, bool relative = false);
-	void move_VRP(glm::vec3 offset, bool relative = false);
+	//void move_VRP(glm::vec3 offset, bool relative = false);
 	
 	void rotateX_OBS(float offset, bool relative = true);
 	void rotateY_OBS(float offset, bool relative = true);
@@ -34,7 +35,7 @@ class Camera
 
 	void rotateX_VRP(float offset, bool relative = true);
 	void rotateY_VRP(float offset, bool relative = true);
-	//void rotateZ_VRP(float offset, bool relative = true);
+	void rotateZ_VRP(float offset, bool relative = true);
 	
 	void applyResize(unsigned int w, unsigned int h);
 	
