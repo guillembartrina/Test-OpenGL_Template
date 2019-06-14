@@ -17,7 +17,7 @@ Drawable::~Drawable()
     }
 }
 
-void Drawable::load_FromModel(Model* m)
+void Drawable::load_FromModel(Model* m, GLuint progid)
 {
     if(loaded)
     {
@@ -25,6 +25,41 @@ void Drawable::load_FromModel(Model* m)
         glDeleteVertexArrays(1, &VAO);
         glGenVertexArrays(1, &VAO);
     }
+
+	//Test phase
+
+	GLint count;
+	glGetProgramiv(progid, GL_ACTIVE_ATTRIBUTES, &count);
+
+	if(count != 6)
+	{
+		std::cerr << "Not 6 attributes on shader to link model" << std::endl;
+		return;
+	}
+
+	for(unsigned int i = 0; i < count; i++)
+	{
+		GLenum type;
+
+		glGetActiveAttrib(progid, i, 0, NULL, NULL, &type, NULL);
+
+		if(i < 5)
+		{
+			if(type != GL_FLOAT_VEC3)
+			{
+				std::cerr << "Not matching some vec3 on shader to link model" << std::endl;
+				return;
+			}
+		}
+		else
+		{
+			if(type != GL_FLOAT)
+			{
+				std::cerr << "Not matching the float on shader to link model" << std::endl;
+				return;
+			}
+		}
+	}
 
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -81,6 +116,7 @@ void Drawable::draw() const
 	{
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, vertex);
+		glBindVertexArray(0);
 	}
 	else std::cerr << "Drawing drawable while not loaded" << std::endl;
 }

@@ -69,6 +69,11 @@ void Program::useProgram() const
 	else std::cerr << "Using program while not loaded program" << std::endl;
 }
 
+GLuint Program::getID() const
+{
+	return ID;
+}
+
 bool Program::load_FromFile(const std::string& vspath, const std::string& fspath)
 {
 	return (readFile(vspath, vsSrc) and readFile(fspath, fsSrc));

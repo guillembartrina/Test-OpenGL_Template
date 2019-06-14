@@ -351,12 +351,12 @@ void Camera::applyResize(unsigned int w, unsigned int h)
 	};
 }
 
-GLfloat* Camera::getVM()
+float* Camera::getVM()
 {
 	return &VM[0][0];
 }
 
-GLfloat* Camera::getPM()
+float* Camera::getPM()
 {
 	return &PM[0][0];
 }

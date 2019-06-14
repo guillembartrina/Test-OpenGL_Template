@@ -17,7 +17,7 @@ class Drawable
     Drawable();
     ~Drawable();
 
-    void load_FromModel(Model* m);
+    void load_FromModel(Model* m, GLuint progid);
 
     void draw() const;
     

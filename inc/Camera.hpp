@@ -2,8 +2,6 @@
 #ifndef CAMERA_HPP
 #define CAMERA_HPP
 
-#include "GL/glew.h"
-#include "GLM/glm.hpp"
 #include "GLM/gtc/matrix_transform.hpp"
 
 enum OpticType { ORTHOGONAL = 0, PERSPECTIVE };
@@ -19,7 +17,6 @@ class Camera
 	
 	void setOptic_Perspective(float FOV, float ra, float zN, float zF);
 	void setOptic_Orthogonal(float l, float r, float b, float t, float zN, float zF);
-	//void setOptics_Fustrum();
 	
 	void setAs3PC_Default(glm::vec3 min, glm::vec3 max, OpticType type);
 	void setAs3PC_Custom(glm::vec3 min, glm::vec3 max, OpticType type, glm::vec3 OBSdir, float dist, glm::vec3 up);
@@ -39,8 +36,8 @@ class Camera
 	
 	void applyResize(unsigned int w, unsigned int h);
 	
-	GLfloat* getVM();
-	GLfloat* getPM();
+	float* getVM();
+	float* getPM();
 	
 	
 	private:

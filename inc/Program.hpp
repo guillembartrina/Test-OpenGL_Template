@@ -18,8 +18,8 @@ class Program //NEEDS OPENGL CONTEXT!!!
 	void addUniforms(const std::vector<const char*>& names, std::vector<GLuint>& locations);
 
 	void useProgram() const;
-	
-	
+	GLuint getID() const;
+
 	private:
 	
 	GLuint ID;
@@ -28,8 +28,7 @@ class Program //NEEDS OPENGL CONTEXT!!!
 	GLuint fsID;
 	std::string fsSrc;
 
-	bool loaded;	
-	//save uniforms?
+	bool loaded;
 
 	bool load_FromFile(const std::string& vspath, const std::string& fspath);
 	bool compile();
