@@ -3,8 +3,16 @@
 
 #include <iostream>
 
-Drawable::Drawable()
+Drawable::Drawable(GLuint TMlocation)
 {
+	scale_i = glm::vec3(1.0);
+
+	translate = glm::vec3(0.0);
+	scale = glm::vec3(1.0);
+
+	TM = glm::mat4(1.0);
+	this->TMlocation = TMlocation;
+
     loaded = false;
 }
 
@@ -17,7 +25,7 @@ Drawable::~Drawable()
     }
 }
 
-void Drawable::load_FromModel(Model* m, GLuint progid)
+void Drawable::load_FromModel(Model* m, GLuint programID)
 {
     if(loaded)
     {
@@ -29,7 +37,7 @@ void Drawable::load_FromModel(Model* m, GLuint progid)
 	//Test phase
 
 	GLint count;
-	glGetProgramiv(progid, GL_ACTIVE_ATTRIBUTES, &count);
+	glGetProgramiv(programID, GL_ACTIVE_ATTRIBUTES, &count);
 
 	if(count != 6)
 	{
@@ -41,7 +49,7 @@ void Drawable::load_FromModel(Model* m, GLuint progid)
 	{
 		GLenum type;
 
-		glGetActiveAttrib(progid, i, 0, NULL, NULL, &type, NULL);
+		glGetActiveAttrib(programID, i, 0, NULL, NULL, &type, NULL);
 
 		if(i < 5)
 		{
@@ -107,6 +115,18 @@ void Drawable::load_FromModel(Model* m, GLuint progid)
 
     glBindVertexArray(0);
 
+	//---
+
+	glm::vec3 min, max;
+	getMM_FromModel(m, min, max);
+
+	center_o = (min + max) / 2.f;
+	size_o = max - min;
+
+	computeTM();
+
+	//---
+
     loaded = true;
 }
 
@@ -114,9 +134,51 @@ void Drawable::draw() const
 {
 	if(loaded)
 	{
+		glUniformMatrix4fv(TMlocation, 1, GL_FALSE, &TM[0][0]);
+
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, vertex);
 		glBindVertexArray(0);
 	}
 	else std::cerr << "Drawing drawable while not loaded" << std::endl;
+}
+
+void Drawable::computeTM()
+{
+	TM = glm::mat4(1.0);
+  
+	for(int i = rotations.size()-1; i >= 0; i--)
+	{
+		TM = glm::rotate(TM, rotations[i].first, rotations[i].second);
+	}
+	
+	TM = glm::scale(TM, scale);
+	
+	TM = glm::translate(TM, translate);
+	
+	for(int i = rotations_i.size()-1; i >= 0; i--)
+	{
+		TM = glm::rotate(TM, rotations_i[i].first, rotations_i[i].second);
+	}
+	
+	TM = glm::scale(TM, scale_i);
+	
+	TM = glm::translate(TM, -1.f * center_o);
+}
+
+void Drawable::getMM_FromModel(Model* m, glm::vec3& min, glm::vec3& max)
+{
+	min.x = max.x = m->vertices()[0];
+    min.y = max.y = m->vertices()[1];
+    min.z = max.z = m->vertices()[2];
+    
+    for(unsigned int i = 3; i < m->vertices().size(); i+=3)
+    {
+        if(m->vertices()[i] < min.x) min.x = m->vertices()[i];
+        if(m->vertices()[i] > max.x) max.x = m->vertices()[i];
+        if(m->vertices()[i+1] < min.y) min.y = m->vertices()[i+1];
+        if(m->vertices()[i+1] > max.y) max.y = m->vertices()[i+1];
+        if(m->vertices()[i+2] < min.z) min.z = m->vertices()[i+2];
+        if(m->vertices()[i+2] > max.z) max.z = m->vertices()[i+2];
+    }
 }

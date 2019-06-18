@@ -7,7 +7,8 @@ in vec3 kdF;
 in vec3 ksF;
 in float nF;
 
-vec3 posFocus = vec3(0.0, 0.0, 0.0);
+in vec3 focusF;
+
 vec3 colFocus = vec3(1.0, 1.0, 1.0);
 
 vec3 Ambient()
@@ -19,7 +20,7 @@ vec3 Diffuse()
 {
 	vec3 col = vec3(0.0, 0.0, 0.0);
 
-	vec3 L = normalize(posFocus - positionF);
+	vec3 L = normalize(focusF - positionF);
 
 	float alpha = dot(normalF, L);
 
@@ -35,14 +36,14 @@ vec3 Specular()
 {
 	vec3 col = vec3(0.0, 0.0, 0.0);
 
-	vec3 L = normalize(posFocus - positionF);
+	vec3 L = normalize(focusF - positionF);
 
 	float alpha = dot(normalF, L);
 
 	if(alpha > 0)
 	{
 		vec3 R = reflect(-L, normalF);
-		vec3 V = normalize(-posFocus);
+		vec3 V = normalize(-focusF);
 
 		float beta = dot(R, V);
 

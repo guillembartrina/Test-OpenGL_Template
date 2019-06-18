@@ -16,8 +16,6 @@
 Camera c1;
 Camera c2;
 
-Model m;
-
 int w, h;
 
 bool moving = true;
@@ -80,23 +78,21 @@ int main()
 	glewInit();
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glEnable(GL_DEPTH_TEST);
+
+	Model m;
 	
 	Program p;
-	Drawable d;
 	
 	p.loadShaders_FromFile("shaders/vs.vert", { "position", "normal", "ka", "kd", "ks", "n" }, "shaders/fs.frag");
-	std::vector<GLuint> locs(3);
-	p.addUniforms({ "GT", "VT", "PT" }, locs);
+	std::vector<GLuint> locs(5);
+	p.addUniforms({ "GT", "VT", "PT", "SCOfocus", "focus"}, locs);
 	p.useProgram();
+
+	Drawable d(locs[0]);
 	
-	m.load("objs/box.obj");
+	m.load("objs/Test.obj");
 
 	d.load_FromModel(&m, p.getID());
-	
-	glm::mat4 gt(1.0);
-	//gt = glm::rotate(gt, 0.5f, glm::vec3(0, 1, 0));
-	//gt = glm::scale(gt, glm::vec3(0.5, 2, 2));
-	gt = glm::scale(gt, glm::vec3(0.1, 0.1, 0.1));
 
 	c1.setFocus(glm::vec3(4.0, 0.0, 0.1), glm::vec3(0.0), glm::vec3(0.0, 1.0, 0.0));
 	c2.setFocus(glm::vec3(4.0, 0.0, -0.1), glm::vec3(0.0), glm::vec3(0.0, 1.0, 0.0));
@@ -106,6 +102,10 @@ int main()
 
 	c1.applyResize(w/2, h);
 	c2.applyResize(w/2, h);
+
+	glUniform1i(locs[3], GL_FALSE);
+	glm::vec3 tmp(-18.0, 1.0, 1.0);
+	glUniform3fv(locs[4], 1, &tmp[0]);
 
 	double lasttime = glfwGetTime();
 	
@@ -120,7 +120,6 @@ int main()
 
 		glViewport(0, 0, w/2, h);
 		
-		glUniformMatrix4fv(locs[0], 1, GL_FALSE, &gt[0][0]);
 		glUniformMatrix4fv(locs[1], 1, GL_FALSE, c1.getVM());
 		glUniformMatrix4fv(locs[2], 1, GL_FALSE, c1.getPM());
 		
@@ -128,7 +127,6 @@ int main()
 
 		glViewport(w/2, 0, w/2, h);
 		
-		glUniformMatrix4fv(locs[0], 1, GL_FALSE, &gt[0][0]);
 		glUniformMatrix4fv(locs[1], 1, GL_FALSE, c2.getVM());
 		glUniformMatrix4fv(locs[2], 1, GL_FALSE, c2.getPM());
 		

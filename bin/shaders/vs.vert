@@ -20,6 +20,9 @@ uniform mat4 GT;
 uniform mat4 VT;
 uniform mat4 PT;
 
+uniform bool SCOfocus;
+uniform vec3 focus;
+
 void main()
 {
 	positionF = (VT * GT * vec4(position, 1.0)).xyz;
@@ -31,6 +34,9 @@ void main()
 	kdF = kd;
 	ksF = ks;
 	nF = n;
+
+	if(SCOfocus) focusF = focus;
+	else focusF = (VT * vec4(focus, 1.0)).xyz;
 
 	gl_Position = PT * VT * GT * vec4(position, 1.0);
 }
