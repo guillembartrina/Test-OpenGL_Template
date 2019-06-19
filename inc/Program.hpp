@@ -14,7 +14,7 @@ public:
 	~Program();
 
 	void loadShaders_FromFile(const std::string &vspath, const std::vector<const char *> &vsinnames, const std::string &fspath);
-	void addUniforms(const std::vector<const char *> &names, std::vector<GLuint> &locations);
+	GLuint* addUniforms(const std::vector<const char *> &names);
 
 	void useProgram() const;
 	GLuint getID() const;

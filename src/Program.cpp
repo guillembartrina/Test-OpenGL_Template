@@ -51,17 +51,22 @@ void Program::loadShaders_FromFile(const std::string &vspath, const std::vector<
 	loaded = true;
 }
 
-void Program::addUniforms(const std::vector<const char *> &names, std::vector<GLuint> &locations)
+GLuint* Program::addUniforms(const std::vector<const char *> &names)
 {
 	if (loaded)
 	{
+		GLuint* locations = (GLuint*)malloc(sizeof(GLuint)*names.size());
+
 		for (unsigned int i = 0; i < names.size(); i++)
 		{
 			locations[i] = glGetUniformLocation(ID, names[i]);
 		}
+
+		return locations;
 	}
-	else
-		std::cerr << "Adding uniforms while not loaded program" << std::endl;
+	else std::cerr << "Adding uniforms while not loaded program" << std::endl;
+
+	return nullptr;
 }
 
 void Program::useProgram() const
@@ -70,8 +75,7 @@ void Program::useProgram() const
 	{
 		glUseProgram(ID);
 	}
-	else
-		std::cerr << "Using program while not loaded program" << std::endl;
+	else std::cerr << "Using program while not loaded program" << std::endl;
 }
 
 GLuint Program::getID() const

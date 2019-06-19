@@ -39,8 +39,8 @@ public:
 
 	void applyResize(unsigned int w, unsigned int h);
 
-	float *getVM();
-	float *getPM();
+	const float *getVM() const;
+	const float *getPM() const;
 
 private:
 	OpticType optic;
