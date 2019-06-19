@@ -9,19 +9,17 @@
 
 class Program //NEEDS OPENGL CONTEXT!!!
 {
-	public:
-	
+public:
 	Program();
 	~Program();
 
-	void loadShaders_FromFile(const std::string& vspath, const std::vector<const char*>& vsinnames, const std::string& fspath);
-	void addUniforms(const std::vector<const char*>& names, std::vector<GLuint>& locations);
+	void loadShaders_FromFile(const std::string &vspath, const std::vector<const char *> &vsinnames, const std::string &fspath);
+	void addUniforms(const std::vector<const char *> &names, std::vector<GLuint> &locations);
 
 	void useProgram() const;
 	GLuint getID() const;
 
-	private:
-	
+private:
 	GLuint ID;
 	GLuint vsID;
 	std::string vsSrc;
@@ -30,11 +28,11 @@ class Program //NEEDS OPENGL CONTEXT!!!
 
 	bool loaded;
 
-	bool load_FromFile(const std::string& vspath, const std::string& fspath);
+	bool load_FromFile(const std::string &vspath, const std::string &fspath);
 	bool compile();
 	bool link();
-	
-	static bool readFile(const std::string& path, std::string& src);
+
+	static bool readFile(const std::string &path, std::string &src);
 };
 
 #endif
